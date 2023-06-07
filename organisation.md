@@ -28,7 +28,7 @@ Tout le monde : se renseigner sur le service AWS
 - Alice : Analyse de rentabilité
 - Tim : Développer software sur ESP32 pour communiquer avec IoT Core
 
-
+Prochain vocal: Dimanche 11 juin 18h00:
 
 Notes discussion avec MGF:
 
