@@ -20,26 +20,30 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 WiFiClientSecure net;
 MQTTClient client;
 
+String incomingMessage = "";
+
 int8_t TIME_ZONE = 2; //UTC+2
 time_t now;
 time_t nowish = 1510592825;
 
 void NTPConnect(void)
 {
-  tft.print("Setting time using SNTP");
+  tft.println("Setting time with SNTP");
+  Serial.print("Setting time using SNTP");
   configTime(TIME_ZONE * 3600, 0 * 3600, "pool.ntp.org", "time.nist.gov");
   now = time(nullptr);
   while (now < nowish)
   {
     delay(500);
-    //Serial.print(".");
+    Serial.print(".");
     now = time(nullptr);
   }
   tft.println("done!");
+  Serial.println("done!");
   struct tm timeinfo;
   gmtime_r(&now, &timeinfo);
-  //Serial.print("Current time: ");
-  //Serial.print(asctime(&timeinfo));
+  Serial.print("Current time: ");
+  Serial.print(asctime(&timeinfo));
 }
 
 void connectAWS()
@@ -48,10 +52,10 @@ void connectAWS()
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   tft.println("Connecting to Wi-Fi");
-
+  Serial.println("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
-    //Serial.print(".");
+    Serial.print(".");
   }
 
     NTPConnect();
@@ -74,14 +78,15 @@ void connectAWS()
   client.onMessage(messageHandler);
 
   tft.print("Connecting to AWS IoT");
+  Serial.print("Connecting to AWS IoT");
 
   while (!client.connect(THINGNAME)) {
-    //Serial.println(client.lastError());
+    Serial.println(client.lastError());
     delay(1000);
   }
 
   if (!client.connected()) {
-    //Serial.println("AWS IoT Timeout!");
+    Serial.println("AWS IoT Timeout!");
     return;
   }
 
@@ -89,6 +94,7 @@ void connectAWS()
   client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC);
 
   tft.println("AWS IoT Connected!");
+  Serial.println("AWS IoT Connected!");
 }
 
 void publishMessage()
@@ -104,23 +110,25 @@ void publishMessage()
 
 void messageHandler(String &topic, String &payload)
 {
-  //Serial.println("incoming: " + topic + " - " + payload);
+  Serial.println("incoming: " + topic + " - " + payload);
 
   StaticJsonDocument<200> doc;
   DeserializationError error = deserializeJson(doc, payload);
 
   if (error) {
-    //Serial.println("Failed to parse JSON message");
+    Serial.println("Failed to parse JSON message");
     return;
   }
 
   const char* message = doc["message"];
-  tft.println(String(message));
+  incomingMessage = String(message);
+  Serial.println(incomingMessage);
 }
+
 
 void setup()
 {
-  //Serial.begin(9600);
+  Serial.begin(9600);
   tft.initR(INITR_144GREENTAB);
   tft.setTextWrap(true); // Allow text to run off right edge
   tft.fillScreen(ST7735_BLACK);
@@ -133,5 +141,14 @@ void loop()
 {
   publishMessage();
   client.loop();
+
+  if (!incomingMessage.isEmpty()) {
+    tft.fillScreen(ST7735_BLACK);
+    tft.setCursor(0, 0);
+    tft.setTextColor(ST7735_WHITE);
+    tft.println(incomingMessage);
+    incomingMessage = "";
+  }
+
   delay(1000);
 }

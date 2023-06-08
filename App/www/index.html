@@ -1,0 +1,164 @@
+<!DOCTYPE html><meta charset="utf-8">
+<html>
+<head>
+    <title>Workshop - AWS IoT Core</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+			background-image: url('https://workshop-grl-static-website.s3.amazonaws.com/CLD.jpg');
+			background-size: cover;
+			background-position: center;
+			color: white;
+        }
+
+        .header, .footer {
+			font-size: 32px;
+            text-align: center;
+            padding-bottom: 40px;
+            background-color: transparent;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+			color: white;
+			background-color: rgba(0, 0, 0, 0.4);
+        }
+
+		.authors {
+            text-align: left;
+            flex: 1;
+			font-size: 18px;
+        }
+		
+        .container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 0;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .circle {
+            height: 50px;
+            width: 50px;
+            background-color: #bbb;
+            border-radius: 50%;
+            margin: 20px auto;
+        }
+        
+        .btn {
+            background-color: #4CAF50; 
+            border: none;
+			border-radius: 2px;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+        
+        .txt-input {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+			font-size: 18;
+        }
+		
+		.git {
+			font-size: 24px;
+			padding-right: 40px;
+		}
+		
+
+        #messageStatus {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<header>
+        <a href="https://heig-vd.ch" class="header-logo">
+            <img src="https://heig-vd.ch/images/heig-vd-logo.gif" alt="Logo HEIG VD" width="112" height="112">
+        </a>
+</header>
+
+<div class="header">
+    <h1>Workshop - AWS IoT Core</h1>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Device 1</h2>
+        <input class="txt-input" type="text" id="myInput" maxlength="255" placeholder="Enter your message...">
+        <button class="btn" onclick="sendMessage()">Send</button>
+        <p id="messageStatus"></p>
+    </div>
+
+    <div class="card">
+        <h2>Device 2</h2>
+        <div class="circle"></div>
+    </div>
+
+    <div class="card">
+        <h2>Device 3</h2>
+        <div class="circle"></div>
+    </div>
+</div>
+
+<div class="footer">
+	<div class="authors">
+		<div>
+			<p>Alice Grunder</p>
+			<p>Anthony David</p>
+			<p>Timothée Van Hove</p>
+		</div>
+	</div>
+		<div class="git">
+			<a href="https://github.com/DrC0okie/HEIG_CLD_Workshop.git">Check out our repo!</a>
+		</div>
+</div>
+
+<script>
+async function sendMessage() {
+    const message = document.getElementById('myInput').value;
+    const messageStatus = document.getElementById('messageStatus');
+    const response = await fetch('https://u4rfq7xyzflj4d4von2bf6634e0ideue.lambda-url.us-east-1.on.aws/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+    });
+    const content = await response.text();
+    if (response.ok) {
+        messageStatus.textContent = "Message sent!";
+        messageStatus.style.color = "green";
+    } else {
+        messageStatus.textContent = "Failed to send message!";
+        messageStatus.style.color = "red";
+    }
+    console.log(content);
+}
+</script>
+
+</body>
+</html>
+
