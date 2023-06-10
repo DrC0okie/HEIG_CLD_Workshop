@@ -13,7 +13,6 @@
 #define TFT_DC D3  //for TFT I2C Connector Shield V1.0.0 and TFT 1.4 Shield V1.0.0
 
 // The MQTT topics that this device should publish/subscribe
-#define AWS_IOT_PUBLISH_TOPIC   "esp8266/pub"
 #define AWS_IOT_SUBSCRIBE_TOPIC "esp8266/sub"
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
@@ -22,14 +21,14 @@ MQTTClient client;
 
 String incomingMessage = "";
 
-int8_t TIME_ZONE = 2; //UTC+2
+int8_t TIME_ZONE = 0; //UTC+0
 time_t now;
 time_t nowish = 1510592825;
 
 void NTPConnect(void)
 {
-  tft.println("Setting time with SNTP");
-  Serial.print("Setting time using SNTP");
+  tft.println("Setting time SNTP");
+  Serial.println("Setting time using SNTP");
   configTime(TIME_ZONE * 3600, 0 * 3600, "pool.ntp.org", "time.nist.gov");
   now = time(nullptr);
   while (now < nowish)
@@ -43,7 +42,7 @@ void NTPConnect(void)
   struct tm timeinfo;
   gmtime_r(&now, &timeinfo);
   Serial.print("Current time: ");
-  Serial.print(asctime(&timeinfo));
+  Serial.println(asctime(&timeinfo));
 }
 
 void connectAWS()
@@ -77,8 +76,8 @@ void connectAWS()
   // Create a message handler
   client.onMessage(messageHandler);
 
-  tft.print("Connecting to AWS IoT");
-  Serial.print("Connecting to AWS IoT");
+  tft.println("Connecting to AWS IoT");
+  Serial.println("Connecting to AWS IoT");
 
   while (!client.connect(THINGNAME)) {
     Serial.println(client.lastError());
@@ -95,17 +94,6 @@ void connectAWS()
 
   tft.println("AWS IoT Connected!");
   Serial.println("AWS IoT Connected!");
-}
-
-void publishMessage()
-{
-  StaticJsonDocument<200> doc;
-  doc["time"] = millis();
-  doc["sensor_a0"] = analogRead(A0);
-  char jsonBuffer[512];
-  serializeJson(doc, jsonBuffer); // print to client
-
-  client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer);
 }
 
 void messageHandler(String &topic, String &payload)
@@ -135,20 +123,30 @@ void setup()
   tft.setTextColor(ST7735_WHITE);
   tft.setTextSize(1);
   connectAWS();
+  tft.fillScreen(ST7735_BLACK);
+  tft.setCursor(0, 0);
+  tft.println(" __    __           _        _                 ");
+  tft.println("/ / /\ \ \___  _ __| | _____| |__   ___  _ __  ");
+  tft.println("\ \/  \/ / _ \| '__| |/ / __| '_ \ / _ \| '_ \ ");
+  tft.println(" \  /\  / (_) | |  |   <\__ \ | | | (_) | |_) |");
+  tft.println("  \/  \/ \___/|_|  |_|\_\___/_| |_|\___/| .__/ ");
+  tft.println("                                        |_|    ");
 }
 
 void loop()
 {
-  publishMessage();
   client.loop();
 
   if (!incomingMessage.isEmpty()) {
-    tft.fillScreen(ST7735_BLACK);
-    tft.setCursor(0, 0);
-    tft.setTextColor(ST7735_WHITE);
+    if(tft.getCursorY() == 128){
+      tft.fillScreen(ST7735_BLACK);
+      tft.setCursor(0, 0);
+    }
+
     tft.println(incomingMessage);
     incomingMessage = "";
+    Serial.println(tft.getCursorY());
   }
 
-  delay(1000);
+  delay(10);
 }

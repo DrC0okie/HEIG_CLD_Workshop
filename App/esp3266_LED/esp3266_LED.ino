@@ -8,19 +8,18 @@
 
 #define PIN   D4
 #define LED_NUM 7
+
 // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
 // Note that for older NeoPixel strips you might need to change the third parameter--see the strandtest
 // example for more information on possible values.
 Adafruit_NeoPixel leds = Adafruit_NeoPixel(LED_NUM, PIN, NEO_GRB + NEO_KHZ800);
 
 // The MQTT topics that this device should publish/subscribe
-#define AWS_IOT_PUBLISH_TOPIC   "esp8266_LED/pub"
 #define AWS_IOT_SUBSCRIBE_TOPIC "esp8266_LED/sub"
+
 
 WiFiClientSecure net;
 MQTTClient client;
-
-String incomingMessage = "";
 
 int8_t TIME_ZONE = 2; //UTC+2
 time_t now;
@@ -28,7 +27,7 @@ time_t nowish = 1510592825;
 
 void NTPConnect(void)
 {
-  Serial.print("Setting time using SNTP");
+  Serial.print("Setting time SNTP");
   configTime(TIME_ZONE * 3600, 0 * 3600, "pool.ntp.org", "time.nist.gov");
   now = time(nullptr);
   while (now < nowish)
@@ -46,6 +45,7 @@ void NTPConnect(void)
 
 void connectAWS()
 {
+  led_set(32, 32, 32, 2);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
@@ -54,9 +54,10 @@ void connectAWS()
     delay(1000);
     Serial.print(".");
   }
+  led_set(32, 32, 32, 4);
 
-    NTPConnect();
-
+  NTPConnect();
+  led_set(32, 32, 32, 6);
   // Create a secure client
   BearSSL::WiFiClientSecure *clientSecure = new BearSSL::WiFiClientSecure;
 
@@ -90,17 +91,7 @@ void connectAWS()
   client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC);
 
   Serial.println("AWS IoT Connected!");
-}
-
-void publishMessage()
-{
-  StaticJsonDocument<200> doc;
-  doc["time"] = millis();
-  doc["sensor_a0"] = analogRead(A0);
-  char jsonBuffer[512];
-  serializeJson(doc, jsonBuffer); // print to client
-
-  client.publish(AWS_IOT_PUBLISH_TOPIC, jsonBuffer);
+  led_set(0, 32, 0, LED_NUM);
 }
 
 void messageHandler(String &topic, String &payload)
@@ -115,36 +106,37 @@ void messageHandler(String &topic, String &payload)
     return;
   }
 
-  // As the message now contains an object, we parse the JSON object into the individual R, G, and B values.
+  // Parse the JSON object into the individual R, G, and B values.
   JsonObject message = doc["message"];
   uint8_t r = message["r"];
   uint8_t g = message["g"];
   uint8_t b = message["b"];
+
+  r /= 2;
+  g /= 2;
+  b /= 2;
   
-  // We now call the led_set function with the RGB values we've just retrieved.
-  led_set(r, g, b);
+  led_set(r, g, b, LED_NUM);
 }
 
-void led_set(uint8 R, uint8 G, uint8 B) {
-  for (int i = 0; i < LED_NUM; i++) {
+void led_set(uint8 R, uint8 G, uint8 B, uint8_t ledNb) {
+  for (int i = 0; i < ledNb; i++) {
     leds.setPixelColor(i, leds.Color(R, G, B));
     leds.show();
     delay(50);
   }
 }
 
-
 void setup()
 {
   Serial.begin(9600);
   leds.begin(); // This initializes the NeoPixel library.
-  led_set(0, 0, 0);
+  led_set(0, 0, 0, LED_NUM);
   connectAWS();
 }
 
 void loop()
 {
-  publishMessage();
   client.loop();
-  delay(1000);
+  delay(100);
 }
