@@ -36,6 +36,12 @@ Notes discussion avec MGF:
 
 La ville de lausanne réfléchit à l'idée de remplacer son infrastructure pour gérer les places de paking dans la ville par un service cloud. On doit maintenant proposer une solution aux responsables 
 
+# Slides
+Lien vers les slides : https://docs.google.com/presentation/d/1y9o8weXUBTqhjWy1OHMpy-R7rS_GbfOTwv7_iyGbPnA/edit?usp=sharing
+
+
+# Références :
+https://docs.aws.amazon.com/fr_fr/iot/latest/developerguide/what-is-aws-iot.html
 
 
 
