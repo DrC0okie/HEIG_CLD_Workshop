@@ -18,7 +18,7 @@ const getAsync = promisify(client.get).bind(client);
 exports.handler = async (event, context) => {
     console.log("Received event: ", event);
 
-    const payload = JSON.parse(event.payload); // If the payload sent from AWS IoT Core is a stringified JSON
+    const payload = event;
     console.log("Parsed payload: ", payload);
 
     if (typeof payload.button !== 'boolean') {
@@ -28,6 +28,7 @@ exports.handler = async (event, context) => {
 
     // Get the connection ID from Redis
     const connectionId = await getAsync('connectionId');
+	console.log("Retreived connectionId from Redis: ", connectionId);
 
     // This is the part where we send a message to the WebSocket connection
     await apigwManagementApi.postToConnection({
