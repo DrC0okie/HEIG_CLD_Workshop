@@ -120,9 +120,10 @@
 	</div>
 
     <div class="card">
-        <h2>Device 3</h2>
-        <div class="circle"></div>
-    </div>
+		<h2>Device 3</h2>
+		<div class="circle" id="device3circle"></div>
+</div>
+
 </div>
 
 <div class="footer">
@@ -172,6 +173,43 @@ async function sendMessage(topic, isColor = false) {
         messageStatus.style.color = "red";
     }
 }
+
+// Connect to the WebSocket API
+let socket = new WebSocket("wss://hnafqat5ti.execute-api.us-east-1.amazonaws.com/demo");
+
+// Connection opened
+socket.addEventListener('open', function (event) {
+    console.log('WebSocket connection opened');
+	console.log('ConnectionID:' + socket.protocol)
+});
+// Listen for messages
+socket.addEventListener('message', function (event) {
+    console.log('Message from server: ', event.data);
+
+    let data = JSON.parse(event.data);
+    if ('button' in data) {
+        // Get the circle element
+        let circleElement = document.querySelector('.circle');
+
+        // Update the circle's color based on the button value
+        circleElement.style.backgroundColor = data.button ? 'green' : 'red';
+    }
+});
+
+// Connection closed
+socket.addEventListener('close', function (event) {
+    console.log('WebSocket connection closed');
+});
+
+// Error handler
+socket.addEventListener('error', function (event) {
+    console.log('WebSocket error: ', event);
+});
+
+// When the window is closed, also close the WebSocket connection
+window.addEventListener('beforeunload', function() {
+    socket.close();
+});
 </script>
 
 </body>

@@ -2,7 +2,7 @@
 "name": "websocket-handler",
 "version": "1.0.0",
 "description": "AWS Lambda function for handling WebSocket messages.",
-"main": "index.js",
+"main": "main.js",
 "dependencies": {
     "aws-sdk": "^2.964.0",
     "redis": "^3.1.2"
