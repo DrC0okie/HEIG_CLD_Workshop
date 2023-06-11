@@ -7,14 +7,15 @@ const client = redis.createClient({
     port: process.env.REDIS_PORT,
     password: process.env.REDIS_PASSWORD
 });
-const delAsync = promisify(client.del).bind(client);
+
+const sremAsync = promisify(client.srem).bind(client);
 
 exports.handler = async (event, context) => {
     console.log("Received disconnect event: ", event);
     const connectionId = event.requestContext.connectionId;
 
     // Delete the connection ID from Redis
-    await delAsync('connectionId');
+    await sremAsync('connectionIds', connectionId);
 
     return {};
 };

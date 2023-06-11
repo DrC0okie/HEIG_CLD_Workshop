@@ -7,8 +7,8 @@ const client = redis.createClient({
     port: process.env.REDIS_PORT, // Redis port
     password: process.env.REDIS_PASSWORD // Redis password
 });
-const setAsync = promisify(client.set).bind(client);
-const getAsync = promisify(client.get).bind(client); // Promisify the get function
+
+const saddAsync = promisify(client.sadd).bind(client);
 
 exports.handler = async (event, context) => {
     console.log("Received event: ", event);
@@ -16,11 +16,7 @@ exports.handler = async (event, context) => {
     console.log("Stored connection ID: ", connectionId);
 
     // Store the connection ID in Redis
-    await setAsync('connectionId', connectionId);
-
-    // Get the stored value from Redis to verify
-    const storedValue = await getAsync('connectionId');
-    console.log("Retrieved stored connection ID from Redis: ", storedValue);
+    await saddAsync('connectionIds', connectionId);
 
     return {};
 };

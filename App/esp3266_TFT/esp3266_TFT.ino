@@ -50,8 +50,11 @@ void connectAWS()
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  tft.println("Connecting to Wi-Fi");
-  Serial.println("Connecting to Wi-Fi");
+  tft.print("Connecting to Wi-Fi : ");
+  tft.println(WIFI_SSID);
+  Serial.println("Connecting to Wi-Fi : ");
+  Serial.println(WIFI_SSID);
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.print(".");
@@ -125,12 +128,6 @@ void setup()
   connectAWS();
   tft.fillScreen(ST7735_BLACK);
   tft.setCursor(0, 0);
-  tft.println(" __    __           _        _                 ");
-  tft.println("/ / /\ \ \___  _ __| | _____| |__   ___  _ __  ");
-  tft.println("\ \/  \/ / _ \| '__| |/ / __| '_ \ / _ \| '_ \ ");
-  tft.println(" \  /\  / (_) | |  |   <\__ \ | | | (_) | |_) |");
-  tft.println("  \/  \/ \___/|_|  |_|\_\___/_| |_|\___/| .__/ ");
-  tft.println("                                        |_|    ");
 }
 
 void loop()
